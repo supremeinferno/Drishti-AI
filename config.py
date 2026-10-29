@@ -1,4 +1,4 @@
-"""Central settings for Third Eye. Tweak these instead of editing the code."""
+"""Central settings for Drishti. Tweak these instead of editing the code."""
 
 CAMERA_INDEX = 0
 FRAME_WIDTH = 640

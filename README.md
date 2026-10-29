@@ -1,6 +1,6 @@
-# Third Eye – AI Assistant for the Visually Impaired
+# Drishti AI (दृष्टि) – Vision Assistant for the Visually Impaired
 
-A real-time assistant that tells a blind or low-vision user what is around them, how far away it is and in which direction, and reads Indian currency notes out loud.
+*Drishti* means "vision" in Hindi. A real-time assistant that tells a blind or low-vision user what is around them, how far away it is and in which direction, and reads Indian currency notes out loud.
 
 > "Careful! chair, 0.8 meters ahead. person, 2.4 meters on your left."
 

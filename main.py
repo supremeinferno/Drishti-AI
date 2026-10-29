@@ -1,4 +1,4 @@
-"""Third Eye: real-time obstacle + currency assistant for visually impaired people.
+"""Drishti: real-time obstacle + currency assistant for visually impaired people.
 
     python main.py                # webcam, pinhole distance
     python main.py --depth        # use the Depth Anything V2 neural depth model
@@ -76,7 +76,7 @@ def main():
     source = int(args.source) if args.source.isdigit() else args.source
     cap = cv2.VideoCapture(source)
     mode = "depth model" if args.depth else "pinhole"
-    speaker.say("Third Eye started")
+    speaker.say("Drishti is ready")
     prev = time.time()
     fps = 0.0
 
@@ -99,7 +99,7 @@ def main():
         fps = 0.9 * fps + 0.1 / max(now - prev, 1e-6)
         prev = now
         draw(frame, obstacles, fps, mode)
-        cv2.imshow("Third Eye", frame)
+        cv2.imshow("Drishti", frame)
 
         key = cv2.waitKey(1) & 0xFF
         if key == ord("c"):
