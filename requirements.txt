@@ -1,0 +1,10 @@
+torch>=2.3
+torchvision>=0.18
+ultralytics>=8.2
+opencv-python>=4.9
+numpy
+pillow
+scikit-learn
+pyttsx3; sys_platform != "darwin"
+# only needed for `python main.py --depth`
+transformers>=4.45
