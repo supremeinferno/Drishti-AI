@@ -30,6 +30,12 @@ source .venv/bin/activate          # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
+If `yolov8n.pt` fails to download (some college/office networks block GitHub release files), get it from the Hugging Face mirror instead:
+
+```bash
+curl -L -o yolov8n.pt https://huggingface.co/Ultralytics/YOLOv8/resolve/main/yolov8n.pt
+```
+
 ## Steps
 
 1. **Run the obstacle detector:** `python main.py` (the YOLO weights download on first run).
