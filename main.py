@@ -76,7 +76,7 @@ def main():
     source = int(args.source) if args.source.isdigit() else args.source
     cap = cv2.VideoCapture(source)
     mode = "depth model" if args.depth else "pinhole"
-    speaker.say("Drishti is ready")
+    speaker.say("Drishti-AI is ready")
     prev = time.time()
     fps = 0.0
 
