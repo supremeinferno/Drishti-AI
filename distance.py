@@ -3,17 +3,45 @@
 PinholeEstimator  - fast, no extra model, uses known object heights + camera focal length.
 DepthEstimator    - neural monocular depth (Depth Anything V2), slower but works for any object.
 """
+from __future__ import annotations
+
 import cv2
 import numpy as np
 
 from detector import Detection
 
 
+EDGE_PX = 2  # a box this close to the frame edge is cut off by it
+
+
 class PinholeEstimator:
-    def __init__(self, focal_px: float, known_heights: dict[str, float], danger_m: float):
+    """distance = real_height * focal / pixel_height, corrected for boxes cut off by the frame.
+
+    A cut-off box is shorter than the object, so the plain formula says it is FARTHER than it
+    really is (a chair 2 m away with its legs below the frame comes out as 9 m). For those boxes
+    we use the edge that is still visible. With a level camera held at camera_height_m, a point
+    h metres above the floor that appears `dy` pixels below the image centre is
+    (camera_height_m - h) * focal / dy metres away:
+      - feet visible (h = 0): measure where the object stands on the floor
+      - top visible (h = known height): measure from the object's top edge
+    """
+
+    MIN_HEIGHT_GAP_M = 0.3  # top edge level with the camera says nothing about distance
+
+    def __init__(self, focal_px: float, known_heights: dict[str, float], danger_m: float,
+                 camera_height_m: float):
         self.focal_px = focal_px
         self.known_heights = known_heights
         self.danger_m = danger_m
+        self.camera_height_m = camera_height_m
+
+    def distance_from_edge(self, y: float, height_m: float, frame_h: int) -> float | None:
+        """Distance to a point height_m above the floor seen at image row y."""
+        drop_m = self.camera_height_m - height_m  # how far below the camera the point is
+        dy = y - frame_h / 2                      # pixels below the horizon (image centre)
+        if abs(drop_m) < self.MIN_HEIGHT_GAP_M or abs(dy) < 1 or (drop_m > 0) != (dy > 0):
+            return None
+        return drop_m * self.focal_px / dy
 
     def estimate(self, frame, detections: list[Detection]) -> list[float | None]:
         frame_h = frame.shape[0]
@@ -26,10 +54,16 @@ class PinholeEstimator:
                 distances.append(None)
                 continue
             dist = real_h * self.focal_px / pixel_h
-            # A box cut off at both the top and bottom edge means the object fills the view,
-            # so the pixel height underestimates its size. Treat it as close.
-            if y1 <= 2 and y2 >= frame_h - 2:
+            top_cut, bottom_cut = y1 <= EDGE_PX, y2 >= frame_h - EDGE_PX
+            if top_cut and bottom_cut:
+                # The object fills the view from top to bottom. Treat it as close.
                 dist = min(dist, self.danger_m * 0.8)
+            elif top_cut or bottom_cut:
+                # Measure from whichever edge is still in view: the feet, or the top.
+                edge = self.distance_from_edge(y2, 0.0, frame_h) if top_cut \
+                    else self.distance_from_edge(y1, real_h, frame_h)
+                if edge is not None:
+                    dist = min(dist, edge)
             distances.append(dist)
         return distances
 

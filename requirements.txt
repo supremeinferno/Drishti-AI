@@ -1,6 +1,7 @@
 torch>=2.3
 torchvision>=0.18
 ultralytics>=8.2
+lap>=0.5.12           # ByteTrack object tracking
 opencv-python>=4.9
 numpy
 pillow

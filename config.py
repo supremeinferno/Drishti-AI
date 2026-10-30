@@ -11,6 +11,11 @@ CONF_THRESHOLD = 0.45
 # Run calibrate.py once for your webcam and paste the printed value here.
 FOCAL_LENGTH_PX = 600.0
 
+# Height of the camera above the floor (chest-mounted phone or held laptop) and kept roughly
+# level. Used to measure distance from where an object touches the floor when the top of
+# its box is cut off by the frame.
+CAMERA_HEIGHT_M = 1.3
+
 # Approximate real-world heights in metres for COCO classes we care about.
 KNOWN_HEIGHTS_M = {
     "person": 1.70,
@@ -47,6 +52,12 @@ DEPTH_MODEL_ID = "depth-anything/Depth-Anything-V2-Metric-Indoor-Small-hf"
 DANGER_DISTANCE_M = 1.0      # closer than this -> "Careful!" and red box
 ANNOUNCE_COOLDOWN_S = 4.0    # don't repeat the same object+direction faster than this
 MAX_ANNOUNCEMENTS = 2        # only speak about the N nearest obstacles
+
+# Tracking: the same object keeps one ID across frames, so its distance can be averaged
+# and we can tell when something is coming towards the user.
+DISTANCE_SMOOTHING = 0.4     # weight of the newest frame (lower = steadier, but slower)
+APPROACH_SPEED_MPS = 1.5     # faster than walking pace -> the object itself is moving at us
+TIME_TO_CONTACT_S = 3.0      # warn when it would reach the user within this many seconds
 
 # Currency recognition
 CURRENCY_MODEL_PATH = "models/currency.pt"
