@@ -28,7 +28,10 @@ def main():
         ok, frame = cap.read()
         if not ok:
             break
-        people = [d for d in detector(frame) if d.label == "person"]
+        # Same resize as main.py, otherwise the focal length is measured at the wrong scale.
+        scale = config.FRAME_WIDTH / frame.shape[1]
+        frame = cv2.resize(frame, None, fx=scale, fy=scale)
+        people =[d for d in detector(frame) if d.label == "person"]
         person = max(people, key=lambda d: d.box[3] - d.box[1], default=None)
         if person:
             x1, y1, x2, y2 = person.box
