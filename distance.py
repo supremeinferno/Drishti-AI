@@ -27,6 +27,7 @@ class PinholeEstimator:
     """
 
     MIN_HEIGHT_GAP_M = 0.3  # top edge level with the camera says nothing about distance
+    FILLS_VIEW = 0.8        # a cut-off box this tall (fraction of the frame) is right in front
 
     def __init__(self, focal_px: float, known_heights: dict[str, float], danger_m: float,
                  camera_height_m: float):
@@ -43,6 +44,20 @@ class PinholeEstimator:
             return None
         return drop_m * self.focal_px / dy
 
+    def unknown_height_distance(self, y2: int, bottom_cut: bool, pixel_h: int,
+                                frame_h: int) -> float | None:
+        """Distance for a class with no known height (a cow, a fire hydrant...).
+
+        Dropping it would hide a real obstacle, so measure where it stands on the floor instead.
+        If its base is below the frame it is nearer than the closest floor the camera can see,
+        so report that distance as an upper bound, or "close" if it fills most of the view.
+        """
+        if not bottom_cut:
+            return self.distance_from_edge(y2, 0.0, frame_h)
+        if pixel_h >= self.FILLS_VIEW * frame_h:
+            return self.danger_m * 0.8
+        return self.distance_from_edge(frame_h, 0.0, frame_h)
+
     def estimate(self, frame, detections: list[Detection]) -> list[float | None]:
         frame_h = frame.shape[0]
         distances = []
@@ -50,11 +65,14 @@ class PinholeEstimator:
             real_h = self.known_heights.get(d.label)
             x1, y1, x2, y2 = d.box
             pixel_h = y2 - y1
-            if real_h is None or pixel_h <= 0:
+            if pixel_h <= 0:
                 distances.append(None)
                 continue
-            dist = real_h * self.focal_px / pixel_h
             top_cut, bottom_cut = y1 <= EDGE_PX, y2 >= frame_h - EDGE_PX
+            if real_h is None:
+                distances.append(self.unknown_height_distance(y2, bottom_cut, pixel_h, frame_h))
+                continue
+            dist = real_h * self.focal_px / pixel_h
             if top_cut and bottom_cut:
                 # The object fills the view from top to bottom. Treat it as close.
                 dist = min(dist, self.danger_m * 0.8)

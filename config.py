@@ -43,7 +43,16 @@ KNOWN_HEIGHTS_M = {
     "cell phone": 0.15,
     "book": 0.22,
     "refrigerator": 1.70,
+    # common on Indian streets
+    "cow": 1.40,
+    "horse": 1.60,
+    "sheep": 0.80,
+    "elephant": 2.80,
+    "fire hydrant": 0.75,
+    "parking meter": 1.30,
+    "train": 4.00,
 }
+# Classes missing from this table are still measured, from where they stand on the floor.
 
 # Optional neural depth model (python main.py --depth). Outputs metric depth in metres.
 DEPTH_MODEL_ID = "depth-anything/Depth-Anything-V2-Metric-Indoor-Small-hf"
