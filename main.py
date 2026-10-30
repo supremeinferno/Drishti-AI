@@ -17,11 +17,11 @@ from currency import CurrencyClassifier
 from detector import Detector
 from device import pick_device
 from distance import DepthEstimator, PinholeEstimator
-from guide import Announcer, Obstacle, direction_of
+from guide import AnnounceFilter, Announcer, Obstacle, direction_of
 from speech import Speaker
 from tracking import DistanceSmoother
 
-GREEN, RED, WHITE = (0, 200, 0), (0, 0, 255), (255, 255, 255)
+GREEN, RED, WHITE, GREY = (0, 200, 0), (0, 0, 255), (255, 255, 255), (130, 130, 130)
 
 
 def parse_args():
@@ -32,13 +32,17 @@ def parse_args():
     return p.parse_args()
 
 
-def draw(frame, obstacles: list[Obstacle], fps: float, mode: str):
+def draw(frame, obstacles: list[Obstacle], spoken: list[Obstacle], fps: float, mode: str):
+    spoken_ids = {id(o) for o in spoken}
     for o in obstacles:
         x1, y1, x2, y2 = o.box
-        color = RED if o.distance_m < config.DANGER_DISTANCE_M else GREEN
+        if id(o) not in spoken_ids:
+            color = GREY  # detected, but not something we would say out loud (yet)
+        else:
+            color = RED if o.distance_m < config.DANGER_DISTANCE_M else GREEN
         cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
         text = f"#{o.track_id} " if o.track_id is not None else ""
-        text += f"{o.label} {o.distance_m:.1f}m"
+        text += f"{o.label} {o.conf:.0%} {o.distance_m:.1f}m"
         (tw, th), _ = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, 0.55, 1)
         cv2.rectangle(frame, (x1, y1 - th - 8), (x1 + tw + 6, y1), color, -1)
         cv2.putText(frame, text, (x1 + 3, y1 - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.55, WHITE, 1)
@@ -85,8 +89,12 @@ def main():
         estimator = DepthEstimator(config.DEPTH_MODEL_ID)
     else:
         estimator = PinholeEstimator(config.FOCAL_LENGTH_PX, config.KNOWN_HEIGHTS_M,
-                                     config.DANGER_DISTANCE_M, config.CAMERA_HEIGHT_M)
+                                     config.DANGER_DISTANCE_M, config.CAMERA_HEIGHT_M,
+                                     config.KNOWN_WIDTHS_M)
     smoother = DistanceSmoother(config.DISTANCE_SMOOTHING)
+    worth_announcing = AnnounceFilter(config.ANNOUNCE_CLASSES, config.ANNOUNCE_MIN_CONF,
+                                      config.CONFIRM_S, config.CONFIRM_DANGER_S,
+                                      config.DANGER_DISTANCE_M)
     announcer = Announcer(speaker, config.ANNOUNCE_COOLDOWN_S, config.DANGER_DISTANCE_M,
                           config.MAX_ANNOUNCEMENTS, config.APPROACH_SPEED_MPS,
                           config.TIME_TO_CONTACT_S)
@@ -134,13 +142,14 @@ def main():
                 dist, approach = smoother.update(d.track_id, dist, now)
                 obstacles.append(Obstacle(d.label, d.conf, d.box, dist,
                                           direction_of(d.box, frame.shape[1]), d.track_id,
-                                          approach))
+                                          approach, smoother.seen_for(d.track_id, now)))
             smoother.forget_old(now)
-            announcer.update(obstacles)
+            spoken = [o for o in obstacles if worth_announcing(o)]
+            announcer.update(spoken)
 
             fps = 0.9 * fps + 0.1 / max(now - prev, 1e-6)
             prev = now
-            draw(frame, obstacles, fps, mode)
+            draw(frame, obstacles, spoken, fps, mode)
             cv2.imshow("Drishti", frame)
 
             key = cv2.waitKey(1) & 0xFF

@@ -15,6 +15,27 @@ class Obstacle:
     direction: str
     track_id: int | None = None
     approach_mps: float = 0.0  # positive = getting closer
+    seen_s: float = 0.0        # how long the tracker has followed it
+
+
+@dataclass
+class AnnounceFilter:
+    """Which detections are worth saying out loud.
+
+    Only real obstacles, only when the detector is fairly sure, and only once the object has
+    been seen for a moment, so a box that flickers up for one frame is never spoken.
+    """
+    classes: set[str]
+    min_conf: float
+    confirm_s: float
+    confirm_danger_s: float
+    danger_m: float
+
+    def __call__(self, o: Obstacle) -> bool:
+        if o.label not in self.classes or o.conf < self.min_conf:
+            return False
+        return o.seen_s >= (self.confirm_danger_s if o.distance_m < self.danger_m
+                            else self.confirm_s)
 
 
 def direction_of(box, frame_width: int) -> str:

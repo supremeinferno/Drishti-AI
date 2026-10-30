@@ -58,6 +58,24 @@ KNOWN_HEIGHTS_M = {
 # Optional neural depth model (python main.py --depth). Outputs metric depth in metres.
 DEPTH_MODEL_ID = "depth-anything/Depth-Anything-V2-Metric-Indoor-Small-hf"
 
+# Approximate width in metres, used as a second estimate when the height can't be trusted:
+# a seated person or one cut off by the frame still shows their full shoulders.
+KNOWN_WIDTHS_M = {
+    "person": 0.45,
+}
+
+# What is worth saying out loud. Everything else is still drawn on screen, in grey, but never
+# spoken: a cup, a book or the phone in the user's own hand is not an obstacle.
+ANNOUNCE_CLASSES = {
+    "person", "bicycle", "car", "motorcycle", "bus", "truck", "train",
+    "cat", "dog", "horse", "sheep", "cow", "elephant",
+    "fire hydrant", "parking meter", "bench", "chair", "couch", "potted plant", "bed",
+    "dining table", "toilet", "refrigerator", "suitcase",
+}
+ANNOUNCE_MIN_CONF = 0.55     # stricter than CONF_THRESHOLD: track at 0.45, only speak when surer
+CONFIRM_S = 0.5              # an object must be tracked this long before it is spoken
+CONFIRM_DANGER_S = 0.2       # ...but something already close can't wait that long
+
 # Voice guidance
 DANGER_DISTANCE_M = 1.0      # closer than this -> "Careful!" and red box
 ANNOUNCE_COOLDOWN_S = 10.0   # an object that is still there is repeated after this many seconds
