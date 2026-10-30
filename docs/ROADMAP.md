@@ -4,7 +4,8 @@ The plan, in order. Each phase builds on the previous one. Issue numbers (#) ref
 
 ```
 Phase 0  Prototype                    ✅ done
-Phase 1  Safety fixes                 ⏳ next
+Phase 1  Safety fixes                 ✅ mostly done (tests still to write)
+Phase 1b Real-world accuracy          ⏳ now
 Phase 2  Indian hazard detection
 Phase 3  Currency v2
 Phase 4  Smarter guidance
@@ -19,19 +20,30 @@ Phase 7  Extra features
 - YOLOv8 detection, pinhole and neural depth, left / ahead / right directions, voice with cooldown.
 - Currency data collection and training pipeline with three architectures.
 
-## Phase 1: Safety fixes ⏳
+## Phase 1: Safety fixes ✅ (mostly)
 Goal: the app should never be confidently wrong about danger.
 
-- [ ] Distance correct when the box is cut off at the bottom (#1)
-- [ ] Calibration at the same resolution as the live app (#2)
-- [ ] Never drop obstacles without a known height; fall back to depth or box size (#3)
-- [ ] Priority speech: danger interrupts, plus an instant warning beep (#4)
-- [ ] Speak an alert when the camera fails, plus a "system alive" heartbeat (#5)
-- [ ] Object tracking (ByteTrack) and smoothed distance per object (#6)
+- [x] Distance correct when the box is cut off by the frame (#1)
+- [x] Calibration at the same resolution as the live app (#2)
+- [x] Never drop obstacles without a known height (#3)
+- [x] Priority speech: danger interrupts, plus an instant warning beep (#4)
+- [x] Speak an alert when the camera fails; announce every way of stopping (#5)
+- [x] Object tracking (ByteTrack), smoothed distance, approach warnings, "still there" repeats (#6)
+- [x] Speak only real, confirmed obstacles (#17, part)
+- [x] Shoulder-width distance for seated or cut-off people (#1)
 - [ ] Classify currency on a clean frame (#8)
-- [ ] Unit tests for distance, direction and the announcer logic (#20)
+- [ ] Unit tests for distance, tracking, the announce filter, the announcer and speech priority (#20)
+- [ ] Optional "system alive" heartbeat tone
 
-**Done when:** all 🔴 issues 1–6 are closed and covered by tests.
+## Phase 1b: Real-world accuracy ⏳
+Goal: what the user hears matches reality in a real walking setup.
+
+- [ ] Calibrate focal length and camera height on each team laptop and phone (#14)
+- [ ] Record a ~1 min chest-height walking video and use it as a fixed test for every change
+- [ ] Screen and speech match: on-screen subtitle of the last spoken sentence, rounded spoken distance, re-announce on large changes (#22)
+- [ ] Floor-based distance only when the camera setup fits; camera-tilt setting (#21)
+- [ ] Compare `yolov8n` / `yolo11n` / `yolo11s` on accuracy and FPS (#23)
+- [ ] Test the speech interrupt on Windows (#24)
 
 ## Phase 2: Indian hazard detection
 Goal: detect what actually hurts blind pedestrians in India.
@@ -62,8 +74,9 @@ Goal: reliable, hands-free note reading in a real shop.
 ## Phase 4: Smarter guidance
 Goal: say less, but say exactly the right thing.
 
-- [ ] Time-to-collision from tracked distance, so warnings depend on how fast something approaches
-- [ ] Whitelist of relevant obstacles; ignore objects in the user's own hand (#17)
+- [x] Time-to-collision from tracked distance (approach warnings)
+- [x] Whitelist of relevant obstacles (#17)
+- [ ] Ignore objects held in the user's own hand, even when they are obstacle classes
 - [ ] Distances in steps; optional clock directions (#17)
 - [ ] Path advice: "Obstacle ahead, move slightly right" (using the free-path map from Phase 2)
 - [ ] Verbosity modes: *quiet* (danger only), *normal*, *describe scene*
@@ -82,7 +95,7 @@ Goal: something a blind person can carry and use daily.
 ## Phase 6: Evaluation and user study (alongside every phase)
 See [EVALUATION.md](EVALUATION.md).
 
-- [ ] Distance benchmark (pinhole vs depth, at 1–5 m)
+- [ ] Distance benchmark (pinhole vs depth, at 1–5 m, standing and seated)
 - [ ] Detection mAP on our own Indian test set
 - [ ] Currency test accuracy and confusion matrix
 - [ ] Speed (FPS, latency) on the laptop and the target device
