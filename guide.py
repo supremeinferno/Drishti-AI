@@ -68,7 +68,7 @@ class Announcer:
                        for o in obstacles}
         # Anything coming at the user goes first, then the nearest.
         ranked = sorted(obstacles, key=lambda o: (not approaching[id(o)], o.distance_m))
-        messages = []
+        messages, urgent = [], False
         for o in ranked[:self.max_items]:
             # With a track ID the same chair stays the same chair when it moves from "ahead"
             # to "on your left", so it isn't announced again just for crossing a zone line.
@@ -84,5 +84,7 @@ class Announcer:
             # "still" only when the tracker confirms it is the same object as last time.
             still_there = prev is not None and o.track_id is not None
             messages.append(describe(o, self.danger_m, approaching[id(o)], still_there))
+            # Same rule as the "Careful!" prefix in describe(): close, or coming at the user.
+            urgent |= approaching[id(o)] or o.distance_m < self.danger_m
         if messages:
-            self.speaker.say(". ".join(messages))
+            self.speaker.say(". ".join(messages), urgent=urgent)
