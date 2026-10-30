@@ -50,7 +50,7 @@ DEPTH_MODEL_ID = "depth-anything/Depth-Anything-V2-Metric-Indoor-Small-hf"
 
 # Voice guidance
 DANGER_DISTANCE_M = 1.0      # closer than this -> "Careful!" and red box
-ANNOUNCE_COOLDOWN_S = 4.0    # don't repeat the same object+direction faster than this
+ANNOUNCE_COOLDOWN_S = 10.0   # an object that is still there is repeated after this many seconds
 MAX_ANNOUNCEMENTS = 2        # only speak about the N nearest obstacles
 
 # Tracking: the same object keeps one ID across frames, so its distance can be averaged
