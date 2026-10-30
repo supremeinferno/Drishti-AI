@@ -2,6 +2,7 @@
 
 CAMERA_INDEX = 0
 FRAME_WIDTH = 640
+CAMERA_RETRY_S = 10.0        # keep trying to reopen a lost camera this long before giving up
 
 # Object detection
 YOLO_WEIGHTS = "yolov8n.pt"  # swap for yolov8s.pt or your own fine-tuned best.pt

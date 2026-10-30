@@ -35,6 +35,7 @@ class Speaker:
         self._urgent: str | None = None
         self._normal: str | None = None
         self._speaking_urgent = False
+        self._busy = False                          # a message is being spoken right now
         self._proc: subprocess.Popen | None = None  # macOS `say` process now speaking
         self._engine = None                         # pyttsx3 engine on other platforms
         if enabled:
@@ -51,9 +52,17 @@ class Speaker:
                     self._interrupt()
             else:
                 self._normal = text
-            self._cond.notify()
+            self._cond.notify_all()
         if urgent:
             beep()
+
+    def wait_until_quiet(self, timeout_s: float = 6.0):
+        """Block until everything queued has been spoken, e.g. a last message before exiting."""
+        if not self.enabled:
+            return
+        with self._cond:
+            self._cond.wait_for(lambda: not self._busy and self._urgent is None
+                                and self._normal is None, timeout_s)
 
     def _interrupt(self):
         if self._proc is not None and self._proc.poll() is None:
@@ -74,6 +83,7 @@ class Speaker:
                     text, self._urgent, self._speaking_urgent = self._urgent, None, True
                 else:
                     text, self._normal, self._speaking_urgent = self._normal, None, False
+                self._busy = True
                 if self._engine is None:
                     # Started under the lock, so an urgent message can always find and stop it.
                     # pyttsx3 is unreliable off the main thread on macOS; the built-in `say` is not.
@@ -84,4 +94,5 @@ class Speaker:
                 self._engine.say(text)
                 self._engine.runAndWait()
             with self._cond:
-                self._speaking_urgent = False
+                self._speaking_urgent = self._busy = False
+                self._cond.notify_all()
