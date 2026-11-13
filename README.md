@@ -86,7 +86,7 @@ Each stage is a separate module. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md
 
 ## 5. Known issues (summary)
 
-**Fixed so far:** cut-off boxes reported far away · calibration resolution mismatch · objects without a known height dropped silently · danger warnings overwritten · silent stop on camera failure · no tracking · announcing phones, cups and one-frame ghost detections · seated person reported 3.4 m away instead of about 0.6 m.
+**Fixed so far:** cut-off boxes reported far away · calibration resolution mismatch · objects without a known height dropped silently · danger warnings overwritten · silent stop on camera failure · no tracking · announcing phones, cups and one-frame ghost detections · seated person reported 3.4 m away instead of about 0.6 m · currency read from the annotated frame instead of the clean camera image.
 
 **Most important open problems:**
 1. 🔴 **COCO has no Indian street hazards** (stairs, potholes, drains, poles).
@@ -94,7 +94,6 @@ Each stage is a separate module. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md
 3. 🟠 **Floor-based distances assume a level camera at chest height.** On a laptop on a desk, objects on the table come out too far away.
 4. 🟠 **The screen and the speech show different distances.**
 5. 🟠 **The small model mislabels objects**, for example a purse as "book" or "laptop".
-6. 🟠 **The currency classifier receives the annotated frame**, and its validation accuracy will be inflated.
 
 Full list with causes, file locations and fixes: **[docs/KNOWN_ISSUES.md](docs/KNOWN_ISSUES.md)**.
 

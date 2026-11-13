@@ -149,8 +149,11 @@ def main():
 
             fps = 0.9 * fps + 0.1 / max(now - prev, 1e-6)
             prev = now
-            draw(frame, obstacles, spoken, fps, mode)
-            cv2.imshow("Drishti", frame)
+            # Draw on a copy: the currency model was trained on clean photos,
+            # so boxes, zone lines and FPS text must never reach it.
+            view = frame.copy()
+            draw(view, obstacles, spoken, fps, mode)
+            cv2.imshow("Drishti", view)
 
             key = cv2.waitKey(1) & 0xFF
             if key == ord("c"):

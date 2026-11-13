@@ -16,7 +16,6 @@ Severity:
 | 21 | Floor-based distances assume a level camera at chest height and objects on the floor | 🟠 | Distance |
 | 22 | Screen and speech show different distances | 🟠 | UX |
 | 23 | Small detector mislabels objects (purse → "book" / "laptop") | 🟠 | Detection |
-| 8 | Currency is classified on the annotated frame | 🟠 | Currency |
 | 9 | Near-duplicate photos leak between train and val | 🟠 | Currency |
 | 10 | No test set: the best epoch is chosen and reported on val | 🟠 | Currency |
 | 11 | The model may learn background and lighting instead of the note | 🟠 | Currency |
@@ -40,6 +39,7 @@ Severity:
 | 4 | Danger warnings could be overwritten or delayed | Urgent / normal speech slots; urgent beeps, interrupts normal speech and can't be replaced |
 | 5 | App stopped silently when the camera failed | Spoken alerts, 10 s reconnect, and every way of stopping is announced |
 | 6 | No frame-to-frame tracking or smoothing | ByteTrack IDs, smoothed distance, approach speed, "still there" repeats |
+| 8 | Currency was classified on the annotated frame (boxes, zone lines, FPS text) | `main.py` draws on a copy (`view = frame.copy()`) for the screen and classifies the clean `frame` |
 | 17 *(part)* | Announced cups, books, laptops and the phone in the user's hand; one-frame ghosts spoken | `AnnounceFilter`: only obstacle classes, ≥ 55% confidence, tracked ≥ 0.5 s (0.2 s when close). Others are drawn in grey |
 
 ---
@@ -74,11 +74,6 @@ Severity:
 - **Where:** [config.py:8](../config.py#L8)
 - **What happens:** `yolov8n` is the smallest YOLO model (about 37 mAP on COCO). A purse was shown as "book" and then as "laptop". A wrong label also means the wrong known height, so the distance is wrong too. Non-obstacle labels are no longer spoken (#17), but a mislabelled *obstacle* still would be.
 - **Fix:** compare `yolov8n`, `yolo11n` and `yolo11s` on accuracy and FPS on our laptops. Long term, fine-tune on our own data (#7).
-
-### 8. Currency is classified on the annotated frame
-- **Where:** [main.py:152-157](../main.py#L152-L157)
-- **What happens:** `draw()` paints boxes, zone lines and FPS text **onto `frame` in place**, and pressing C then classifies that same frame. The model was trained on clean photos.
-- **Fix:** keep a clean copy (`raw = frame.copy()`) before drawing and classify `raw`.
 
 ### 9. Near-duplicate photos leak between train and val
 - **Where:** [collect_currency.py:36](../collect_currency.py#L36), [split_dataset.py:22](../split_dataset.py#L22)
