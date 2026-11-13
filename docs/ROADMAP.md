@@ -31,7 +31,7 @@ Goal: the app should never be confidently wrong about danger.
 - [x] Object tracking (ByteTrack), smoothed distance, approach warnings, "still there" repeats (#6)
 - [x] Speak only real, confirmed obstacles (#17, part)
 - [x] Shoulder-width distance for seated or cut-off people (#1)
-- [ ] Classify currency on a clean frame (#8)
+- [x] Classify currency on a clean frame (#8)
 - [ ] Unit tests for distance, tracking, the announce filter, the announcer and speech priority (#20)
 - [ ] Optional "system alive" heartbeat tone
 
